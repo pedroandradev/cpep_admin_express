@@ -18,6 +18,8 @@ model Employee {
   city      String?
   hireDate  DateTime  @map("hire_date")
 
+  roles Role[]
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -42,4 +44,23 @@ model User {
   employee Employee @relation(fields: [employeeId], references: [id])
 
   @@map("users")
+}
+
+model Role {
+  id        BigInt     @id @default(autoincrement())
+  employees Employee[]
+
+  name String
+}
+
+model Clients {
+  id        BigInt @id @default(autoincrement())
+  name      String
+  shortName String @map("short_name")
+  email     String @unique
+  phone     String
+  website   String
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 }
