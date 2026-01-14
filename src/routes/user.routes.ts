@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import { listUsers } from '../controllers/user.controller.js';
+import { listUsers, logUsers } from '../controllers/user.controller.js';
 
 const router = Router();
 
-router.get('/', listUsers);
+router.get('/users', listUsers);
+router.post('/users', logUsers);
 
 export default router;

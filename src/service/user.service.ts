@@ -5,3 +5,8 @@ export async function findAllUsers(): Promise<User[]> {
   const [rows] = await pool.query('SELECT * FROM users');
   return rows as User[];
 }
+
+export async function postUser(): Promise<User[]>{
+  const [rows] = await pool.query('SELECT * FROM users')
+  return rows as User[]
+}
