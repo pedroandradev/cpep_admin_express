@@ -18,14 +18,27 @@ model Employee {
   city      String?
   hireDate  DateTime  @map("hire_date")
 
-  roles Role[]
-
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  user User?
+  user        User?
+  roles       Role[]
+  vacation    Vacation[]        @relation("VacationRequester")
+  approvedVac Vacation[]        @relation("VacationApprover")
+  services    Service[]
+  externals   ExternalService[]
+  labMaint    LabMaintenance[]
 
   @@map("employee")
+}
+
+model Role {
+  id        BigInt     @id @default(autoincrement())
+  name      String
+  employees Employee[]
+  services  Service[]
+
+  @@map("role")
 }
 
 model User {
@@ -46,11 +59,19 @@ model User {
   @@map("users")
 }
 
-model Role {
-  id        BigInt     @id @default(autoincrement())
-  employees Employee[]
+model Vacation {
+  id          BigInt    @id @default(autoincrement())
+  employeeId  BigInt    @map("employee_id")
+  startDate   DateTime  @map("start_date")
+  endDate     DateTime  @map("end_date")
+  status      String
+  approvedBy  BigInt?   @map("approved_by")
+  approvedAte DateTime? @map("approved_at")
 
-  name String
+  employee Employee  @relation("VacationRequester", fields: [employeeId], references: [id])
+  approver Employee? @relation("VacationApprover", fields: [approvedBy], references: [id])
+
+  @@map("vacation")
 }
 
 model Clients {
@@ -63,4 +84,227 @@ model Clients {
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+
+  contacts  ClientContact[]
+  assets    Asset[]
+  services  Service[]
+  externals ExternalService[]
+  labMaint  LabMaintenance[]
+  softwares Software[]
+
+  @@map("clients")
+}
+
+model ClientContact {
+  id        BigInt  @id @default(autoincrement())
+  clientId  BigInt  @map("client_id")
+  name      String
+  email     String?
+  phone     String?
+  position  String?
+  isPrimary Boolean @map("is_primary_contact")
+
+  client    Clients           @relation(fields: [clientId], references: [id])
+  services  Service[]
+  externals ExternalService[]
+  labMaint  LabMaintenance[]
+
+  @@map("client_contact")
+}
+
+model Asset {
+  id          BigInt   @id @default(autoincrement())
+  clientId    BigInt   @map("client_id")
+  assetType   String   @map("asset_type")
+  name        String
+  status      String
+  description String?
+  createdAt   DateTime @map("created_at")
+  updatedAt   DateTime @map("updated_at")
+
+  client         Clients          @relation(fields: [clientId], references: [id])
+  infrastructure Infrastructure?
+  server         Server?
+  labMaint       LabMaintenance[]
+
+  @@map("assets")
+}
+
+model Infrastructure {
+  id                   BigInt  @id @default(autoincrement())
+  assetId              BigInt  @unique @map("asset_id")
+  ipAddress            String? @map("ip_address")
+  managementUrl        String? @map("management_url")
+  accessProtocol       String? @map("access_protocol")
+  accessPort           Int?    @map("access_port")
+  location             String?
+  connectedDescription String? @map("connected_description")
+  notes                String?
+
+  asset    Asset      @relation(fields: [assetId], references: [id])
+  sofwares Software[]
+
+  @@map("infrastructure")
+}
+
+model Server {
+  id      BigInt @id @default(autoincrement())
+  assetId BigInt @unique @map("asset_id")
+
+  cpuModel   String? @map("cpu_model")
+  cpuCores   Int?    @map("cpu_cores")
+  cpuThreads Int?    @map("cpu_threads")
+
+  ramGb         Int?    @map("ram_gb")
+  ramType       String? @map("ram_type")
+  ramSlotsTotal Int?    @map("ram_slots_total")
+  ramsSlotsUsed Int?    @map("ram_slots_used")
+
+  motherboard  String?
+  bioVersion   String? @map("bios_version")
+  architecture String?
+
+  storageController String? @map("storage_controller")
+  raidLevel         String? @map("raid_level")
+  totalStorageGb    Int?    @map("total_storage_gb")
+
+  networkIntefaces Int?
+  primaryMac       String? @map("primary_mac")
+  secondaryMac     String? @map("secondary_mac")
+
+  osName         String? @map("os_name")
+  osVersion      String? @map("os_version")
+  virtualization String?
+  isVirtual      Boolean @map("is_virtual")
+
+  serialNumber String?   @map("serial_number")
+  nabyfactyrer String?
+  model        String?
+  purchaseDate DateTime? @map("purchase_date")
+  warratyEnd   DateTime? @map("warranty_end")
+
+  asset Asset @relation(fields: [assetId], references: [id])
+  hds   Hd[]
+
+  @@map("server")
+}
+
+model Hd {
+  id           BigInt  @id @default(autoincrement())
+  serverId     BigInt  @map("server_id")
+  type         String
+  capacityGb   Int     @map("capacity_gb")
+  interface    String
+  serialNumber String? @map("serial_number")
+  slot         String?
+  status       String
+
+  server  Server   @relation(fields: [serverId], references: [id])
+  backups Backup[]
+
+  @@map("hd")
+}
+
+model Backup {
+  id         BigInt   @id @default(autoincrement())
+  hdId       BigInt   @map("hd_id")
+  status     String
+  executedAt DateTime @map("executed_at")
+  lastRunAt  DateTime @map("last_run_at")
+  nextRunAt  DateTime @map("next_run_at")
+
+  hd Hd @relation(fields: [hdId], references: [id])
+
+  @@map("backup")
+}
+
+model Software {
+  id               BigInt  @id @default(autoincrement())
+  clientId         BigInt  @map("client_id")
+  infrastructureId BigInt? @map("infrastructure_id")
+  name             String
+  accessIp         String? @map("access_ip")
+  port             Int?
+  url              String?
+  version          String?
+  environment      String?
+  notes            String?
+
+  client         Clients         @relation(fields: [clientId], references: [id])
+  infrastructure Infrastructure? @relation(fields: [infrastructureId], references: [id])
+
+  @@map("software")
+}
+
+model ExternalService {
+  id            BigInt   @id @default(autoincrement())
+  clientId      BigInt   @map("client_id")
+  employeeId    BigInt   @map("employee_id")
+  contactId     BigInt   @map("contact_id")
+  scheduledDate DateTime @map("scheduled_date")
+  serviceDate   DateTime @map("service_date")
+  status        String
+  description   String?
+  osScan        String?  @map("os_scan")
+  createdAt     DateTime @map("created_at")
+  updatedAt     DateTime @map("updated_at")
+
+  client   Clients[]
+  employee Employee[]
+  contact  ClientContact[]
+
+  @@map("external_service")
+}
+
+model Service {
+  id          BigInt   @id @default(autoincrement())
+  clientId    BigInt   @map("client_id")
+  employeeId  BigInt   @map("employee_id")
+  roleId      BigInt   @map("role_id")
+  contactId   BigInt   @map("contact_id")
+  serviceDate DateTime @map("service_date")
+  status      String
+  reason      String?
+  description String?
+  createdAt   DateTime @map("created_at")
+  updatedAt   DateTime @map("updated_at")
+
+  client   Clients[]
+  employee Employee[]
+  role     Role[]
+  contact  ClientContact[]
+
+  @@map("service")
+}
+
+model LabMaintenance {
+  id          BigInt    @id @default(autoincrement())
+  assetId     BigInt    @map("asset_id")
+  clientId    BigInt    @map("client_id")
+  contactId   BigInt    @map("contact_id")
+  employeeId  BigInt    @map("employee_id")
+  status      String
+  problemDesc String?   @map("problem_description")
+  serviceDesc String?   @map("service_description")
+  receivedAt  DateTime  @map("received_at")
+  exitAt      DateTime? @map("exit_at")
+  returnedAt  DateTime? @map("returned_at")
+  createdAt   DateTime  @map("created_at")
+  updatedAt   DateTime  @map("updated_at")
+
+  asset    Asset[]
+  client   Clients[]
+  contact  ClientContact[]
+  employee Employee[]
+
+  @@map("lab_maintenance")
+}
+
+model Holiday {
+  id         BigInt   @id @default(autoincrement())
+  name       String
+  date       DateTime
+  isNational Boolean  @map("is_national")
+
+  @@map("holidays")
 }
