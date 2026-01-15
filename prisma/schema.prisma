@@ -141,8 +141,8 @@ model Infrastructure {
   connectedDescription String? @map("connected_description")
   notes                String?
 
-  asset    Asset      @relation(fields: [assetId], references: [id])
-  sofwares Software[]
+  asset     Asset      @relation(fields: [assetId], references: [id])
+  softwares Software[]
 
   @@map("infrastructure")
 }
@@ -177,11 +177,11 @@ model Server {
   virtualization String?
   isVirtual      Boolean @map("is_virtual")
 
-  serialNumber String?   @map("serial_number")
-  nabyfactyrer String?
-  model        String?
-  purchaseDate DateTime? @map("purchase_date")
-  warratyEnd   DateTime? @map("warranty_end")
+  serialNumber  String?   @map("serial_number")
+  numberFactory String?
+  model         String?
+  purchaseDate  DateTime? @map("purchase_date")
+  warratyEnd    DateTime? @map("warranty_end")
 
   asset Asset @relation(fields: [assetId], references: [id])
   hds   Hd[]
