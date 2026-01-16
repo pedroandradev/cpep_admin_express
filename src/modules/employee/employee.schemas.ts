@@ -49,3 +49,7 @@ export const employeeListSchema = z.object({
     params: z.object({}).optional(),
     body: z.object({}).optional(),
 })
+
+export type EmployeeCreateBody = z.infer<typeof employeeCreateSchema>["body"]
+
+export type EmployeeUpdateBody = z.infer<typeof employeeUpdateSchema>["body"]
